@@ -31,10 +31,17 @@ while GameRunning:
         if keys[pygame.K_d]:
             PLAYERVELX = 5
             playerside = PlayerFrameRight
-        if keys[pygame.K_a]:
+        elif keys[pygame.K_a]:
             PLAYERVELX = -5
             playerside = PlayerFrameLeft
 
+        else:
+            PLAYERVELX = 0
+
+    PLAYERX += PLAYERVELX
+    PLAYERY += PLAYERVELY
+
+    window.fill((0, 0, 0))
     window.blit(playerside, (PLAYERX, PLAYERY))
 
     pygame.display.flip()
