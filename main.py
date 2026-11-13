@@ -103,14 +103,6 @@ EnemyHitbox = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
 EnemyBulletSprite = pygame.image.load("imgs/Bullet.png").convert_alpha()
 EnemyBulletSprite = pygame.transform.scale(EnemyBulletSprite, (15, 15))
 enemybullet = Bullet(EnemyBulletSprite)
-EnemyBulletShot = False
-
-ENEMYBULLETX = 0
-ENEMYBULLETY = 0
-ENEMYBULLET_VEL_X = 0
-ENEMYBULLET_VEL_Y = 0
-
-EnemyBulletHitbox = pygame.rect.Rect(ENEMYBULLETX, ENEMYBULLETY, 15, 15)
 
 EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 200, 100)
 PlayerHitbox = pygame.rect.Rect(PLAYERX, PLAYERY, 80, 80)
@@ -170,11 +162,6 @@ while GameRunning:
     if ENEMY_X < 100:
         ENEMY_X = 100
 
-    if ENEMYBULLETX > 900:
-        EnemyBulletShot = False
-    if ENEMYBULLETX < 0:
-        EnemyBulletShot = False
-
     PLAYERX += PLAYERVELX
     PLAYERY += PLAYERVELY
     playerbullet.update()
@@ -185,7 +172,6 @@ while GameRunning:
 
     PlayerHitbox.topleft=(PLAYERX, PLAYERY)
     EnemyHitbox.topleft=(ENEMY_X, ENEMY_Y)
-    EnemyBulletHitbox.topleft=(ENEMYBULLETX, ENEMYBULLETY)
 
     if PLAYERX < ENEMY_X:
         Enemyside = EnemySpriteLeft
