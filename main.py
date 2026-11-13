@@ -10,18 +10,6 @@ pygame.display.set_caption("Eclipso Rivalz")
 
 TaskFont = pygame.font.Font(("Kalam-Regular.ttf"), 50)
 
-HEALTHBAR_X = 50
-HEALTHBAR_Y = 400
-HEALTHBAR_HEIGHT = 50
-HEALTHBAR_CURRENT_WIDTH = 200
-
-Healthbar = pygame.Rect(HEALTHBAR_X, HEALTHBAR_Y, HEALTHBAR_CURRENT_WIDTH, HEALTHBAR_HEIGHT)
-
-BACKGROUNDHEALTHBARWIDTH = 200
-BackgroundHealthbar = pygame.Rect(HEALTHBAR_X, HEALTHBAR_Y, BACKGROUNDHEALTHBARWIDTH, HEALTHBAR_HEIGHT)
-
-PlayerHealth = 100
-
 PlayerFrameLeft = pygame.image.load("imgs/PlayerSpriteLeft.png").convert_alpha()
 PlayerFrameLeft = pygame.transform.scale(PlayerFrameLeft, (100, 100))
 PlayerFrameRight = pygame.image.load("imgs/PlayerSpriteRight.png").convert_alpha()
@@ -33,6 +21,18 @@ PLAYERVELX = 0
 PLAYERVELY = 0
 
 playerside = PlayerFrameRight
+
+PLAYERHEALTHBAR_X = PLAYERX
+PLAYERHEALTHBAR_Y = PLAYERY 
+PLAYERHEALTHBAR_HEIGHT = 50
+PLAYERHEALTHBAR_CURRENT_WIDTH = 200
+
+Healthbar = pygame.Rect(PLAYERHEALTHBAR_X, PLAYERHEALTHBAR_Y, PLAYERHEALTHBAR_CURRENT_WIDTH, PLAYERHEALTHBAR_HEIGHT)
+
+PLAYERBACKGROUNDHEALTHBARWIDTH = 200
+BackgroundHealthbar = pygame.Rect(PLAYERHEALTHBAR_X, PLAYERHEALTHBAR_Y, PLAYERBACKGROUNDHEALTHBARWIDTH, PLAYERHEALTHBAR_HEIGHT)
+
+PlayerHealth = 100
 
 # Player jumping
 Y_GRAVITY = 1
@@ -66,6 +66,18 @@ ENEMY_X = 700
 ENEMY_Y = 350
 ENEMY_VEL_X = 0
 ENEMY_VEL_Y = 0
+
+ENEMYHEALTHBAR_X = ENEMY_X
+ENEMYHEALTHBAR_Y = ENEMY_Y 
+ENEMYHEALTHBAR_HEIGHT = 25
+ENEMYHEALTHBAR_CURRENT_WIDTH = 100
+
+EnemyHealthbar = pygame.Rect(ENEMYHEALTHBAR_X, ENEMYHEALTHBAR_Y, ENEMYHEALTHBAR_CURRENT_WIDTH, ENEMYHEALTHBAR_HEIGHT)
+
+ENEMYBACKGROUNDHEALTHBARWIDTH = 100
+EnemyBackgroundHealthbar = pygame.Rect(ENEMYHEALTHBAR_X, ENEMYHEALTHBAR_Y, ENEMYBACKGROUNDHEALTHBARWIDTH, ENEMYHEALTHBAR_HEIGHT)
+
+EnemyHealth = 100
 
 EnemyHitbox = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
 
@@ -157,9 +169,11 @@ while GameRunning:
 
     PLAYERX += PLAYERVELX
     PLAYERY += PLAYERVELY
+    BULLETX += BULLETVELX
 
     ENEMY_X += ENEMY_VEL_X
     ENEMY_Y += ENEMY_VEL_Y
+    ENEMYBULLETX += ENEMYBULLET_VEL_X
 
     PlayerHitbox.topleft=(PLAYERX, PLAYERY)
     EnemyHitbox.topleft=(ENEMY_X, ENEMY_Y)
@@ -169,9 +183,6 @@ while GameRunning:
     if bulletshot == False:
         BULLETX = PLAYERX + 40
         BULLETY = PLAYERY + 50
-    BULLETX += BULLETVELX
-
-    ENEMYBULLETX += ENEMYBULLET_VEL_X
 
     if PLAYERX < ENEMY_X:
         Enemyside = EnemySpriteLeft
@@ -213,13 +224,28 @@ while GameRunning:
             ENEMYBULLET_VEL_X = 10
 
     if PlayerHitbox.colliderect(EnemyBulletHitbox):
-        Healthbar.width += -25
+        EnemyBulletShot = False
+        Healthbar.width += -20
+    if EnemyHitbox.colliderect(BulletHitbox):
+        bulletshot = False
+        EnemyHealthbar.width += -10
+
+    if PlayerHealth > 60:
+        EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
 
     window.fill((0, 0, 0))
 
     if GameRunning:
         TaskText = TaskFont.render("Mission: Kill the organization spy..", True, (255, 255, 255))
         window.blit(TaskText, (50, 50 + TestWave))
+        Healthbar.topleft=(PLAYERX - 50, PLAYERY - 100 + TestWave)
+        BackgroundHealthbar.topleft=(PLAYERX - 50, PLAYERY - 100 + TestWave)
+        EnemyHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
+        EnemyBackgroundHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
+        
+        pygame.draw.rect(window, (200, 0, 0), EnemyBackgroundHealthbar)
+        pygame.draw.rect(window, (135, 249, 89), EnemyHealthbar)
+
         pygame.draw.rect(window, (200, 0, 0), BackgroundHealthbar)
         pygame.draw.rect(window, (135, 249, 89), Healthbar)
         window.blit(EnemyBulletSprite, (ENEMYBULLETX, ENEMYBULLETY))
