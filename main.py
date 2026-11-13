@@ -4,6 +4,30 @@ pygame.init()
 
 clock = pygame.time.Clock()
 
+class Bullet:
+    def __init__(self, sprite):
+        self.sprite = sprite
+        self.rect = pygame.Rect(0, 0, 15, 15)
+        self.vel_x = 0
+        self.active = False
+
+    def fire(self, x, y, direction):
+        self.rect.topleft = (x, y)
+        self.vel_x = 10 * direction
+        self.active = True
+
+    def update(self):
+        self.rect.x += self.vel_x
+        if self.active == True:    
+            if self.rect.x > 900:
+                self.active = False
+            if self.rect.x < 0:
+                self.active = False
+
+    def draw(self, window):
+        if self.active:
+            window.blit(self.sprite, self.rect)
+
 window = pygame.display.set_mode((900, 600))
 window.fill((0, 0, 0))
 pygame.display.set_caption("Eclipso Rivalz")
@@ -48,12 +72,7 @@ EnemyJump = False
 
 bulletsprite = pygame.image.load("imgs/Bullet.png").convert_alpha()
 bulletsprite = pygame.transform.scale(bulletsprite, (15, 15))
-bulletshot = False
-
-BULLETX = 0
-BULLETY = 0
-BULLETVELX = 0
-BULLETVELY = 0
+playerbullet = Bullet(bulletsprite)
 
 EnemySpriteLeft = pygame.image.load("imgs/EnemySpriteLeft.png").convert_alpha()
 EnemySpriteLeft = pygame.transform.scale(EnemySpriteLeft, (100, 100))
@@ -83,9 +102,8 @@ EnemyHitbox = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
 
 EnemyBulletSprite = pygame.image.load("imgs/Bullet.png").convert_alpha()
 EnemyBulletSprite = pygame.transform.scale(EnemyBulletSprite, (15, 15))
+enemybullet = Bullet(EnemyBulletSprite)
 EnemyBulletShot = False
-
-BulletHitbox = pygame.rect.Rect(BULLETX, BULLETY, 15, 15)
 
 ENEMYBULLETX = 0
 ENEMYBULLETY = 0
@@ -124,12 +142,9 @@ while GameRunning:
             jumping = True
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if BULLETX == PLAYERX + 40 and bulletshot == False:
-                bulletshot = True
-                if playerside == PlayerFrameRight:
-                    BULLETVELX = 10
-                if playerside == PlayerFrameLeft:
-                    BULLETVELX = -10
+            if not playerbullet.active:
+                direction = 1 if playerside == PlayerFrameRight else -1
+                playerbullet.fire(PLAYERX + 40, PLAYERY + 50, direction)
 
     if jumping:
         PLAYERY -= Y_VELOCITY
@@ -155,13 +170,6 @@ while GameRunning:
     if ENEMY_X < 100:
         ENEMY_X = 100
 
-    if BULLETX > 900:
-        bulletshot = False
-        BULLETVELX = 0
-    if BULLETX < 0:
-        bulletshot = False
-        BULLETVELX = 0
-
     if ENEMYBULLETX > 900:
         EnemyBulletShot = False
     if ENEMYBULLETX < 0:
@@ -169,20 +177,15 @@ while GameRunning:
 
     PLAYERX += PLAYERVELX
     PLAYERY += PLAYERVELY
-    BULLETX += BULLETVELX
+    playerbullet.update()
 
     ENEMY_X += ENEMY_VEL_X
     ENEMY_Y += ENEMY_VEL_Y
-    ENEMYBULLETX += ENEMYBULLET_VEL_X
+    enemybullet.update()
 
     PlayerHitbox.topleft=(PLAYERX, PLAYERY)
     EnemyHitbox.topleft=(ENEMY_X, ENEMY_Y)
-    BulletHitbox.topleft=(BULLETX, BULLETY)
     EnemyBulletHitbox.topleft=(ENEMYBULLETX, ENEMYBULLETY)
-
-    if bulletshot == False:
-        BULLETX = PLAYERX + 40
-        BULLETY = PLAYERY + 50
 
     if PLAYERX < ENEMY_X:
         Enemyside = EnemySpriteLeft
@@ -213,22 +216,18 @@ while GameRunning:
         if WithinRange == False:
             ENEMY_VEL_X = 2
 
-    if EnemyBulletShot == False:
-        EnemyBulletShot = True
-        ENEMYBULLETX = ENEMY_X + 40
-        ENEMYBULLETY = ENEMY_Y + 50
+    if enemybullet.active == False:
+        direction = -1 if Enemyside == EnemySpriteLeft else 1
+        enemybullet.fire(ENEMY_X + 40, ENEMY_Y + 50, direction)
 
-        if Enemyside == EnemySpriteLeft:
-            ENEMYBULLET_VEL_X = -10
-        if Enemyside == EnemySpriteRight:
-            ENEMYBULLET_VEL_X = 10
-
-    if PlayerHitbox.colliderect(EnemyBulletHitbox):
-        EnemyBulletShot = False
-        Healthbar.width += -20
-    if EnemyHitbox.colliderect(BulletHitbox):
-        bulletshot = False
-        EnemyHealthbar.width += -10
+    if enemybullet.active:
+        if enemybullet.rect.colliderect(PlayerHitbox):
+            enemybullet.active = False
+            Healthbar.width += -20
+    if playerbullet.active:
+        if playerbullet.rect.colliderect(EnemyHitbox):
+            playerbullet.active = False
+            EnemyHealthbar.width += -10
 
     if PlayerHealth > 60:
         EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
@@ -248,9 +247,9 @@ while GameRunning:
 
         pygame.draw.rect(window, (200, 0, 0), BackgroundHealthbar)
         pygame.draw.rect(window, (135, 249, 89), Healthbar)
-        window.blit(EnemyBulletSprite, (ENEMYBULLETX, ENEMYBULLETY))
+        enemybullet.draw(window)
         window.blit(Enemyside, (ENEMY_X, ENEMY_Y))
-        window.blit(bulletsprite, (BULLETX, BULLETY))
+        playerbullet.draw(window)
         window.blit(playerside, (PLAYERX, PLAYERY))
 
     pygame.display.flip()
