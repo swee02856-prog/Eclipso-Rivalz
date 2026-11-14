@@ -4,6 +4,33 @@ pygame.init()
 
 clock = pygame.time.Clock()
 
+class Hitman:
+    def __init__(self, x, y, sprite_left, sprite_right):
+        self.sprite_left = sprite_left
+        self.sprite_right = sprite_right
+        self.rect = pygame.Rect(x, y, 80, 80)
+        self.vel_x = 0
+        self.facing = 1
+        self.jumping = False
+        self.y_gravity = 1
+        self.jump_height = 20
+        self.y_velocity = self.jump_height
+    def update(self):
+        if self.jumping:
+            self.rect.y -= self.y_velocity
+            self.y_velocity -= self.y_gravity
+            if self.y_velocity < -self.jump_height:
+                self.y_velocity = self.jump_height
+                self.jumping = False
+        self.rect.x += self.vel_x
+        if self.rect.x > 800:
+            self.rect.x = 800
+        if self.rect.x < 100:
+            self.rect.x = 100
+    def draw(self, window):
+        sprite = self.sprite_right if self.facing == 1 else self.sprite_left
+        window.blit(sprite, self.rect.topleft)
+
 class Bullet:
     def __init__(self, sprite):
         self.sprite = sprite
@@ -17,8 +44,8 @@ class Bullet:
         self.active = True
 
     def update(self):
-        self.rect.x += self.vel_x
         if self.active == True:    
+            self.rect.x += self.vel_x
             if self.rect.x > 900:
                 self.active = False
             if self.rect.x < 0:
@@ -34,20 +61,15 @@ pygame.display.set_caption("Eclipso Rivalz")
 
 TaskFont = pygame.font.Font(("Kalam-Regular.ttf"), 50)
 
+# Player stuff starts here
 PlayerFrameLeft = pygame.image.load("imgs/PlayerSpriteLeft.png").convert_alpha()
 PlayerFrameLeft = pygame.transform.scale(PlayerFrameLeft, (100, 100))
 PlayerFrameRight = pygame.image.load("imgs/PlayerSpriteRight.png").convert_alpha()
 PlayerFrameRight = pygame.transform.scale(PlayerFrameRight, (100, 100))
+hitman = Hitman(200, 350, PlayerFrameLeft, PlayerFrameRight)
 
-PLAYERX = 200
-PLAYERY = 350
-PLAYERVELX = 0
-PLAYERVELY = 0
-
-playerside = PlayerFrameRight
-
-PLAYERHEALTHBAR_X = PLAYERX
-PLAYERHEALTHBAR_Y = PLAYERY 
+PLAYERHEALTHBAR_X = hitman.rect.x
+PLAYERHEALTHBAR_Y = hitman.rect.y
 PLAYERHEALTHBAR_HEIGHT = 50
 PLAYERHEALTHBAR_CURRENT_WIDTH = 200
 
@@ -57,12 +79,7 @@ PLAYERBACKGROUNDHEALTHBARWIDTH = 200
 BackgroundHealthbar = pygame.Rect(PLAYERHEALTHBAR_X, PLAYERHEALTHBAR_Y, PLAYERBACKGROUNDHEALTHBARWIDTH, PLAYERHEALTHBAR_HEIGHT)
 
 PlayerHealth = 100
-
-# Player jumping
-Y_GRAVITY = 1
-JUMP_HEIGHT = 20
-Y_VELOCITY = JUMP_HEIGHT
-jumping = False
+# Player stuff ends here
 
 # Enemy Jumping
 ENEMY_Y_GRAVITY = 1
@@ -105,7 +122,7 @@ EnemyBulletSprite = pygame.transform.scale(EnemyBulletSprite, (15, 15))
 enemybullet = Bullet(EnemyBulletSprite)
 
 EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 200, 100)
-PlayerHitbox = pygame.rect.Rect(PLAYERX, PLAYERY, 80, 80)
+PlayerHitbox = pygame.rect.Rect(hitman.rect.x, hitman.rect.y, 80, 80)
 
 GameRunning = True
 while GameRunning:
@@ -120,30 +137,26 @@ while GameRunning:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_d]:
-            PLAYERVELX = 5
-            playerside = PlayerFrameRight
+            hitman.vel_x = 5
+            hitman.facing = 1
         elif keys[pygame.K_a]:
-            PLAYERVELX = -5
-            playerside = PlayerFrameLeft
+            hitman.vel_x = -5
+            hitman.facing = -1
         else:
-            PLAYERVELX = 0
+            hitman.vel_x = 0
 
         if keys[pygame.K_SPACE]:
-            jumping = True
+            hitman.jumping = True
         if keys[pygame.K_w]:
-            jumping = True
+            hitman.jumping = True
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if not playerbullet.active:
-                direction = 1 if playerside == PlayerFrameRight else -1
-                playerbullet.fire(PLAYERX + 40, PLAYERY + 50, direction)
-
-    if jumping:
-        PLAYERY -= Y_VELOCITY
-        Y_VELOCITY -= Y_GRAVITY
-        if Y_VELOCITY < -JUMP_HEIGHT:
-            Y_VELOCITY = JUMP_HEIGHT
-            jumping = False
+                if hitman.facing == 1:
+                    direction = 1
+                if hitman.facing == -1:
+                    direction = -1
+                playerbullet.fire(hitman.rect.x + 40, hitman.rect.y + 50, direction)
 
     if EnemyJump:
         ENEMY_Y -= ENEMY_Y_VELOCITY
@@ -152,36 +165,30 @@ while GameRunning:
             ENEMY_Y_VELOCITY = ENEMY_JUMP_HEIGHT
             EnemyJump = False
 
-    if PLAYERX > 700:
-        PLAYERX = 700
-    if PLAYERX < 50:
-        PLAYERX = 50
-
     if ENEMY_X > 700:
         ENEMY_X = 700
     if ENEMY_X < 100:
         ENEMY_X = 100
 
-    PLAYERX += PLAYERVELX
-    PLAYERY += PLAYERVELY
     playerbullet.update()
+    hitman.update()
 
     ENEMY_X += ENEMY_VEL_X
     ENEMY_Y += ENEMY_VEL_Y
     enemybullet.update()
 
-    PlayerHitbox.topleft=(PLAYERX, PLAYERY)
+    PlayerHitbox.topleft=(hitman.rect.x, hitman.rect.y)
     EnemyHitbox.topleft=(ENEMY_X, ENEMY_Y)
 
-    if PLAYERX < ENEMY_X:
+    if hitman.rect.x < ENEMY_X:
         Enemyside = EnemySpriteLeft
         EnemyRaycast.topleft=(ENEMY_X - 300, ENEMY_Y)
 
-    if PLAYERX > ENEMY_X:
+    if hitman.rect.x > ENEMY_X:
         Enemyside = EnemySpriteRight
         EnemyRaycast.topleft=(ENEMY_X + 100, ENEMY_Y)
 
-    elif jumping:
+    elif hitman.jumping:
         EnemyJump = True
 
     else:
@@ -223,8 +230,8 @@ while GameRunning:
     if GameRunning:
         TaskText = TaskFont.render("Mission: Kill the organization spy..", True, (255, 255, 255))
         window.blit(TaskText, (50, 50 + TestWave))
-        Healthbar.topleft=(PLAYERX - 50, PLAYERY - 100 + TestWave)
-        BackgroundHealthbar.topleft=(PLAYERX - 50, PLAYERY - 100 + TestWave)
+        Healthbar.topleft=(hitman.rect.x - 50, hitman.rect.y - 100 + TestWave)
+        BackgroundHealthbar.topleft=(hitman.rect.x - 50, hitman.rect.y - 100 + TestWave)
         EnemyHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
         EnemyBackgroundHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
         
@@ -236,7 +243,7 @@ while GameRunning:
         enemybullet.draw(window)
         window.blit(Enemyside, (ENEMY_X, ENEMY_Y))
         playerbullet.draw(window)
-        window.blit(playerside, (PLAYERX, PLAYERY))
+        hitman.draw(window)
 
     pygame.display.flip()
     clock.tick(60)
