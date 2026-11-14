@@ -223,13 +223,17 @@ while GameRunning:
     if playerbullet.active:
         if playerbullet.rect.colliderect(EnemyHitbox):
             playerbullet.active = False
-            EnemyHealthbar.width += -10
+            EnemyHealthbar.width += -20
+            EnemyHealth -= 20
 
     if PlayerHealth > 60:
         EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
 
     if PlayerHealth <= 0:
         CurrentMode = "Loss"
+
+    if EnemyHealth <= 0:
+        CurrentMode = "Win"
 
     window.fill((0, 0, 0))
 
@@ -257,9 +261,19 @@ while GameRunning:
             FirstGameOvertext = GameOverWinFont.render("The Organization", True, (255, 255, 255))
             SecondGameOvertext = GameOverWinFont.render("succeeded..", True, (255, 255, 255))
             EnemySpriteLeft = pygame.transform.scale(EnemySpriteLeft, (500, 500))
+            hitman = Hitman(-100, 1000, PlayerFrameLeft, PlayerFrameRight)
             window.blit(FirstGameOvertext, (50, 50))
             window.blit(SecondGameOvertext, (100, 140))
             window.blit(EnemySpriteLeft, (500, 200))
+        if CurrentMode == "Win":
+            window.fill((135, 249, 89))
+            FirstWinText = GameOverWinFont.render("You reppelled the", True, (255, 255, 255))
+            SecondWinText = GameOverWinFont.render("Organization..", True, (255, 255, 255))
+            PlayerFrameLeft = pygame.transform.scale(PlayerFrameLeft, (500, 500))
+            hitman = Hitman(-100, 1000, PlayerFrameLeft, PlayerFrameRight)
+            window.blit(FirstWinText, (50, 50))
+            window.blit(SecondWinText, (100, 140))
+            window.blit(PlayerFrameLeft, (500, 200))
 
     pygame.display.flip()
     clock.tick(60)
