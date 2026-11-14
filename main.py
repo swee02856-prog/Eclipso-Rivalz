@@ -60,6 +60,7 @@ window.fill((0, 0, 0))
 pygame.display.set_caption("Eclipso Rivalz")
 
 TaskFont = pygame.font.Font(("Kalam-Regular.ttf"), 50)
+GameOverWinFont = pygame.font.Font(("Kalam-Regular.ttf"), 90)
 
 # Player stuff starts here
 PlayerFrameLeft = pygame.image.load("imgs/PlayerSpriteLeft.png").convert_alpha()
@@ -124,6 +125,7 @@ enemybullet = Bullet(EnemyBulletSprite)
 EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 200, 100)
 PlayerHitbox = pygame.rect.Rect(hitman.rect.x, hitman.rect.y, 80, 80)
 
+CurrentMode = "Playing"
 GameRunning = True
 while GameRunning:
     CurrentTime = pygame.time.get_ticks()
@@ -216,6 +218,7 @@ while GameRunning:
     if enemybullet.active:
         if enemybullet.rect.colliderect(PlayerHitbox):
             enemybullet.active = False
+            PlayerHealth -= 10
             Healthbar.width += -20
     if playerbullet.active:
         if playerbullet.rect.colliderect(EnemyHitbox):
@@ -225,25 +228,38 @@ while GameRunning:
     if PlayerHealth > 60:
         EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
 
+    if PlayerHealth <= 0:
+        CurrentMode = "Loss"
+
     window.fill((0, 0, 0))
 
     if GameRunning:
-        TaskText = TaskFont.render("Mission: Kill the organization spy..", True, (255, 255, 255))
-        window.blit(TaskText, (50, 50 + TestWave))
-        Healthbar.topleft=(hitman.rect.x - 50, hitman.rect.y - 100 + TestWave)
-        BackgroundHealthbar.topleft=(hitman.rect.x - 50, hitman.rect.y - 100 + TestWave)
-        EnemyHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
-        EnemyBackgroundHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
-        
-        pygame.draw.rect(window, (200, 0, 0), EnemyBackgroundHealthbar)
-        pygame.draw.rect(window, (135, 249, 89), EnemyHealthbar)
+        if CurrentMode == "Playing":
+            TaskText = TaskFont.render("Mission: Kill the organization spy..", True, (255, 255, 255))
+            window.blit(TaskText, (50, 50 + TestWave))
+            Healthbar.topleft=(hitman.rect.x - 50, hitman.rect.y - 100 + TestWave)
+            BackgroundHealthbar.topleft=(hitman.rect.x - 50, hitman.rect.y - 100 + TestWave)
+            EnemyHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
+            EnemyBackgroundHealthbar.topleft=(ENEMY_X + 5, ENEMY_Y - 25 + TestWave)
+            
+            pygame.draw.rect(window, (200, 0, 0), EnemyBackgroundHealthbar)
+            pygame.draw.rect(window, (135, 249, 89), EnemyHealthbar)
 
-        pygame.draw.rect(window, (200, 0, 0), BackgroundHealthbar)
-        pygame.draw.rect(window, (135, 249, 89), Healthbar)
-        enemybullet.draw(window)
-        window.blit(Enemyside, (ENEMY_X, ENEMY_Y))
-        playerbullet.draw(window)
-        hitman.draw(window)
+            pygame.draw.rect(window, (200, 0, 0), BackgroundHealthbar)
+            pygame.draw.rect(window, (135, 249, 89), Healthbar)
+            enemybullet.draw(window)
+            window.blit(Enemyside, (ENEMY_X, ENEMY_Y))
+            playerbullet.draw(window)
+            hitman.draw(window)
+
+        if CurrentMode == "Loss":
+            window.fill((153, 0, 0))
+            FirstGameOvertext = GameOverWinFont.render("The Organization", True, (255, 255, 255))
+            SecondGameOvertext = GameOverWinFont.render("succeeded..", True, (255, 255, 255))
+            EnemySpriteLeft = pygame.transform.scale(EnemySpriteLeft, (500, 500))
+            window.blit(FirstGameOvertext, (50, 50))
+            window.blit(SecondGameOvertext, (100, 140))
+            window.blit(EnemySpriteLeft, (500, 200))
 
     pygame.display.flip()
     clock.tick(60)
