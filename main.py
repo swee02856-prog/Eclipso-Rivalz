@@ -61,6 +61,8 @@ pygame.display.set_caption("Eclipso Rivalz")
 
 TaskFont = pygame.font.Font(("Kalam-Regular.ttf"), 50)
 GameOverWinFont = pygame.font.Font(("Kalam-Regular.ttf"), 90)
+StartFont = pygame.font.Font(("Kalam-Regular.ttf"), 90)
+BigStartFont = pygame.font.Font(("Kalam-Regular.ttf"), 120)
 
 # Player stuff starts here
 PlayerFrameLeft = pygame.image.load("imgs/PlayerSpriteLeft.png").convert_alpha()
@@ -125,7 +127,7 @@ enemybullet = Bullet(EnemyBulletSprite)
 EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 200, 100)
 PlayerHitbox = pygame.rect.Rect(hitman.rect.x, hitman.rect.y, 80, 80)
 
-CurrentMode = "Playing"
+CurrentMode = "Start"
 GameRunning = True
 while GameRunning:
     CurrentTime = pygame.time.get_ticks()
@@ -137,6 +139,7 @@ while GameRunning:
             break
     
         keys = pygame.key.get_pressed()
+        mouseposition = pygame.mouse.get_pos()
 
         if keys[pygame.K_d]:
             hitman.vel_x = 5
@@ -152,6 +155,9 @@ while GameRunning:
         if keys[pygame.K_w]:
             hitman.jumping = True
 
+        if keys[pygame.K_ESCAPE]:
+            CurrentMode = "Start"
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if not playerbullet.active:
                 if hitman.facing == 1:
@@ -160,80 +166,81 @@ while GameRunning:
                     direction = -1
                 playerbullet.fire(hitman.rect.x + 40, hitman.rect.y + 50, direction)
 
-    if EnemyJump:
-        ENEMY_Y -= ENEMY_Y_VELOCITY
-        ENEMY_Y_VELOCITY -= ENEMY_Y_GRAVITY
-        if ENEMY_Y_VELOCITY < -ENEMY_JUMP_HEIGHT:
-            ENEMY_Y_VELOCITY = ENEMY_JUMP_HEIGHT
-            EnemyJump = False
+    if CurrentMode == "Playing":
+        if EnemyJump:
+            ENEMY_Y -= ENEMY_Y_VELOCITY
+            ENEMY_Y_VELOCITY -= ENEMY_Y_GRAVITY
+            if ENEMY_Y_VELOCITY < -ENEMY_JUMP_HEIGHT:
+                ENEMY_Y_VELOCITY = ENEMY_JUMP_HEIGHT
+                EnemyJump = False
 
-    if ENEMY_X > 700:
-        ENEMY_X = 700
-    if ENEMY_X < 100:
-        ENEMY_X = 100
+        if ENEMY_X > 700:
+            ENEMY_X = 700
+        if ENEMY_X < 100:
+            ENEMY_X = 100
 
-    playerbullet.update()
-    hitman.update()
+        playerbullet.update()
+        hitman.update()
 
-    ENEMY_X += ENEMY_VEL_X
-    ENEMY_Y += ENEMY_VEL_Y
-    enemybullet.update()
+        ENEMY_X += ENEMY_VEL_X
+        ENEMY_Y += ENEMY_VEL_Y
+        enemybullet.update()
 
-    PlayerHitbox.topleft=(hitman.rect.x, hitman.rect.y)
-    EnemyHitbox.topleft=(ENEMY_X, ENEMY_Y)
+        PlayerHitbox.topleft=(hitman.rect.x, hitman.rect.y)
+        EnemyHitbox.topleft=(ENEMY_X, ENEMY_Y)
 
-    if hitman.rect.x < ENEMY_X:
-        Enemyside = EnemySpriteLeft
-        EnemyRaycast.topleft=(ENEMY_X - 300, ENEMY_Y)
+        if hitman.rect.x < ENEMY_X:
+            Enemyside = EnemySpriteLeft
+            EnemyRaycast.topleft=(ENEMY_X - 300, ENEMY_Y)
 
-    if hitman.rect.x > ENEMY_X:
-        Enemyside = EnemySpriteRight
-        EnemyRaycast.topleft=(ENEMY_X + 100, ENEMY_Y)
+        if hitman.rect.x > ENEMY_X:
+            Enemyside = EnemySpriteRight
+            EnemyRaycast.topleft=(ENEMY_X + 100, ENEMY_Y)
 
-    elif hitman.jumping:
-        EnemyJump = True
+        elif hitman.jumping:
+            EnemyJump = True
 
-    else:
-        ENEMY_VEL_X = 0
-        ENEMY_VEL_Y = 0
-
-    WithinRange = EnemyRaycast.colliderect(PlayerHitbox)
-
-    if Enemyside == EnemySpriteLeft:
-        if WithinRange:
+        else:
             ENEMY_VEL_X = 0
-        if WithinRange == False:
-            ENEMY_VEL_X = -2
+            ENEMY_VEL_Y = 0
 
-    if Enemyside == EnemySpriteRight:
-        if WithinRange:
-            ENEMY_VEL_X = 0
-        if WithinRange == False:
-            ENEMY_VEL_X = 2
+        WithinRange = EnemyRaycast.colliderect(PlayerHitbox)
 
-    if enemybullet.active == False:
-        direction = -1 if Enemyside == EnemySpriteLeft else 1
-        enemybullet.fire(ENEMY_X + 40, ENEMY_Y + 50, direction)
+        if Enemyside == EnemySpriteLeft:
+            if WithinRange:
+                ENEMY_VEL_X = 0
+            if WithinRange == False:
+                ENEMY_VEL_X = -2
 
-    if enemybullet.active:
-        if enemybullet.rect.colliderect(PlayerHitbox):
-            enemybullet.active = False
-            PlayerHealth -= 10
-            Healthbar.width += -20
-    if playerbullet.active:
-        if playerbullet.rect.colliderect(EnemyHitbox):
-            playerbullet.active = False
-            EnemyHealthbar.width += -20
-            EnemyHealth -= 20
+        if Enemyside == EnemySpriteRight:
+            if WithinRange:
+                ENEMY_VEL_X = 0
+            if WithinRange == False:
+                ENEMY_VEL_X = 2
 
-    if PlayerHealth > 60:
-        EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
+        if enemybullet.active == False:
+            direction = -1 if Enemyside == EnemySpriteLeft else 1
+            enemybullet.fire(ENEMY_X + 40, ENEMY_Y + 50, direction)
 
-    if PlayerHealth <= 0:
-        CurrentMode = "Loss"
+        if enemybullet.active:
+            if enemybullet.rect.colliderect(PlayerHitbox):
+                enemybullet.active = False
+                PlayerHealth -= 10
+                Healthbar.width += -20
+        if playerbullet.active:
+            if playerbullet.rect.colliderect(EnemyHitbox):
+                playerbullet.active = False
+                EnemyHealthbar.width += -20
+                EnemyHealth -= 20
 
-    if EnemyHealth <= 0:
-        CurrentMode = "Win"
+        if PlayerHealth > 60:
+            EnemyRaycast = pygame.rect.Rect(ENEMY_X, ENEMY_Y, 100, 100)
+
+        if PlayerHealth <= 0:
+            CurrentMode = "Loss"
+
+        if EnemyHealth <= 0:
+            CurrentMode = "Win"
 
     window.fill((0, 0, 0))
 
@@ -274,6 +281,19 @@ while GameRunning:
             window.blit(FirstWinText, (50, 50))
             window.blit(SecondWinText, (100, 140))
             window.blit(PlayerFrameLeft, (500, 200))
+
+        if CurrentMode == "Start":
+            window.fill((0, 0, 0))
+            SmallStartText = StartFont.render("-Start-", True, (255, 255, 255))
+            BigStartText = BigStartFont.render("-Start-", True, (255, 255, 255))
+            startbuttonrect = SmallStartText.get_rect(topleft=(100, 200))
+            if startbuttonrect.collidepoint(mouseposition):
+                window.blit(BigStartText, startbuttonrect)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    CurrentMode = "Playing"
+            else:
+                window.blit(SmallStartText, startbuttonrect)
+                    
 
     pygame.display.flip()
     clock.tick(60)
