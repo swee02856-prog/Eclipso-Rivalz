@@ -68,6 +68,9 @@ BigStartFont = pygame.font.Font(("Kalam-Regular.ttf"), 120)
 background = pygame.image.load("imgs/background.png").convert_alpha()
 background = pygame.transform.scale(background, (900, 900))
 
+catpicture = pygame.image.load("imgs/cat.png").convert_alpha()
+catpicture = pygame.transform.scale(catpicture, (200, 200))
+
 #Dialogue stuff starts here
 MonsterGuy = pygame.image.load("dialogueimgs/Monster1Frame1.png").convert_alpha()
 MonsterGuy = pygame.transform.scale(MonsterGuy, (500, 500))
@@ -264,13 +267,41 @@ while GameRunning:
             window.fill((0, 0, 0))
             SmallStartText = StartFont.render("-Start-", True, (255, 255, 255))
             BigStartText = BigStartFont.render("-Start-", True, (255, 255, 255))
-            startbuttonrect = SmallStartText.get_rect(topleft=(100, 200))
+            startbuttonrect = SmallStartText.get_rect(topleft=(50, 200))
+            SmallCreditText = StartFont.render("-Credits-", True, (255, 255, 255))
+            BigCreditsText = BigStartFont.render("-Credits-", True, (255, 255, 255))
+            creditbuttonrect = SmallCreditText.get_rect(topleft=(50, 400))
             if startbuttonrect.collidepoint(mouseposition):
                 window.blit(BigStartText, startbuttonrect)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     CurrentMode = "Playing"
             else:
                 window.blit(SmallStartText, startbuttonrect)
+            if creditbuttonrect.collidepoint(mouseposition):
+                window.blit(BigCreditsText, creditbuttonrect)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    CurrentMode = "Credits"
+            else:
+                window.blit(SmallCreditText, creditbuttonrect)
+        if CurrentMode == "Credits":
+            window.fill((0, 0, 0))
+            GameCreditstext = smallFont.render("Game Design: Seaw33", True, (255, 255, 255))
+            DevCreditstext = smallFont.render("Main Dev: Seaw33", True, (255, 255, 255))
+            SubDevCreditstext = smallFont.render("Sub Dev: Seaw33", True, (255, 255, 255))
+            AllCreditstext = smallFont.render("Litterally everything: Seaw33", True, (255, 255, 255))
+            BackButton = StartFont.render("Back", True, (255, 255, 255))
+            BigBackButton = BigStartFont.render("Back", True, (255, 255, 255))
+            BackbuttonRect = BackButton.get_rect(topleft=(400, 400))
+            window.blit(GameCreditstext, (100, 50 + TestWave))
+            window.blit(DevCreditstext, (100, 120 + TestWave))
+            window.blit(SubDevCreditstext, (100, 190 + TestWave))
+            window.blit(AllCreditstext, (100, 260 + TestWave))
+            if BackbuttonRect.collidepoint(mouseposition):
+                window.blit(BigBackButton, BackbuttonRect)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    CurrentMode = "Start"
+            else:
+                window.blit(BackButton, BackbuttonRect)
 
         if CurrentMode == "Dialogue1":
             window.fill((0, 0, 0))
