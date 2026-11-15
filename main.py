@@ -65,6 +65,9 @@ GameOverWinFont = pygame.font.Font(("Kalam-Regular.ttf"), 90)
 StartFont = pygame.font.Font(("Kalam-Regular.ttf"), 90)
 BigStartFont = pygame.font.Font(("Kalam-Regular.ttf"), 120)
 
+background = pygame.image.load("imgs/background.png").convert_alpha()
+background = pygame.transform.scale(background, (900, 900))
+
 #Dialogue stuff starts here
 MonsterGuy = pygame.image.load("dialogueimgs/Monster1Frame1.png").convert_alpha()
 MonsterGuy = pygame.transform.scale(MonsterGuy, (500, 500))
@@ -220,6 +223,7 @@ while GameRunning:
 
     if GameRunning:
         if CurrentMode == "Playing":
+            window.blit(background, (0, -200))
             TaskText = TaskFont.render("Mission: Kill the organization spy..", True, (255, 255, 255))
             window.blit(TaskText, (50, 50 + TestWave))
             Healthbar.topleft=(hitman.rect.x - 50, hitman.rect.y - 100 + TestWave)
